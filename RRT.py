@@ -1,4 +1,4 @@
-   
+
 """
 Path Planning Sample Code with Randamized Rapidly-Exploring Random Trees (RRT)
 
@@ -39,7 +39,7 @@ class RRT():
         self.maxIter = maxIter
         self.obstacleList = obstacleList
 
-    def Planning(self, animation=True):
+    def Planning(self, animation=False):
         """
         Pathplanning
 
@@ -57,7 +57,6 @@ class RRT():
 
             # Find nearest node
             nind = self.GetNearestListIndex(self.nodeList, rnd)
-            # print(nind)
 
             # expand tree
             nearestNode = self.nodeList[nind]
@@ -72,7 +71,6 @@ class RRT():
                 continue
 
             self.nodeList.append(newNode)
-            #print("nNodelist:", len(self.nodeList))
 
             # check goal
             dx = newNode.x - self.end.x
@@ -108,7 +106,7 @@ class RRT():
                          node.y, self.nodeList[node.parent].y], "-g")
 
         for (ox, oy, size) in self.obstacleList:
-            plt.plot(ox, oy, "ok", ms=30 * size)
+            plt.plot(ox, oy, "ok", ms=3 * size)
 
         plt.plot(self.start.x, self.start.y, "xr")
         plt.plot(self.end.x, self.end.y, "xr")
@@ -149,20 +147,23 @@ def run_rrt(start, goal, obstacles):
     print("start " + __file__)
     # Set Initial parameters
     obstacles = buffer_obstacles(obstacles)
-    rrt = RRT(start, goal, obstacles,
+    run_rrt = RRT(start, goal, obstacles,
               randArea=[0, 274], )
-    path = rrt.Planning(animation=show_animation)
+    path = run_rrt.Planning(animation=show_animation)
     return path
 
     # Draw final path
     if show_animation:  # pragma: no cover
-        rrt.DrawGraph()
+        run_rrt.DrawGraph()
         plt.plot([x for (x, y) in path], [y for (x, y) in path], '-r')
         plt.grid(True)
         plt.show()
 
-
+#####
 #field is 2.74m x 2.74 m
+
+def my_animation():
+    plt.clf()
 
 def buffer_obstacles(obstacles):
     #[x,y,size]
