@@ -1,8 +1,11 @@
 import color_obj
+import numpy
 import math
-
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from matplotlib.path import Path
 #defines the state of the robot
-class robot:
+class Robot:
     
     #data describing the current state of the robot
     def __init__(self, my_coords, objects, my_quad):
@@ -74,12 +77,6 @@ class robot:
 
 #testing the robot class
 """
-import matplotlib.pyplot as plt
-from matplotlib.path import Path
-import matplotlib.patches as patches
-import numpy
-import math
-
 stuff = [color_obj.color_obj((8, 10), 0, True, False, False)]
 stuff.append(color_obj.color_obj((18, 10), 0, True, False, False))
 stuff.append(color_obj.color_obj((16, 37), 0, True, True, False))
@@ -92,7 +89,7 @@ stuff.append(color_obj.color_obj((46, 37), 2, True, False, False))
 stuff.append(color_obj.color_obj((19, 91), 3, True, False, False))
 stuff.append(color_obj.color_obj((76, 37), 3, True, False, False))
 stuff.append(color_obj.color_obj((6, 37), 3, True, False, False))
-JJ = robot((3, 3), stuff, 0)
+JJ = Robot((3, 3), stuff, 0)
 
 plt.plot([JJ.coords[0]], [JJ.coords[1]], 'k+')
 point_colors = ['bo', 'go', 'ro', 'yo']
