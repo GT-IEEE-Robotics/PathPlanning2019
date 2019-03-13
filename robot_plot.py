@@ -5,10 +5,10 @@ import random
 import math
 
 #creates objects and robot (pre-determined, for controlled testing)
-"""
-stuff = [robot_2019.color_obj.color_obj((28, 27), 0, True, False, False)]
-stuff.append(robot_2019.color_obj.color_obj((66, 32), 0, True, False, False))
-stuff.append(robot_2019.color_obj.color_obj((29, 60), 0, True, False, False))
+#"""
+stuff = [robot_2019.color_obj.color_obj((28, 27), 0, False, False, False)]
+stuff.append(robot_2019.color_obj.color_obj((66, 32), 0, False, False, False))
+stuff.append(robot_2019.color_obj.color_obj((29, 60), 0, False, False, False))
 stuff.append(robot_2019.color_obj.color_obj((18, 48), 1, True, False, False))
 stuff.append(robot_2019.color_obj.color_obj((65, 37), 1, True, False, False))
 stuff.append(robot_2019.color_obj.color_obj((35, 59), 1, True, False, False))
@@ -18,6 +18,12 @@ stuff.append(robot_2019.color_obj.color_obj((46, 37), 2, True, False, False))
 stuff.append(robot_2019.color_obj.color_obj((31, 40), 3, True, False, False))
 stuff.append(robot_2019.color_obj.color_obj((76, 37), 3, True, False, False))
 stuff.append(robot_2019.color_obj.color_obj((60, 73), 3, True, False, False))
+JJ = robot_2019.robot((25, 25), stuff, 0)
+#"""
+
+#creates objects and robot (random)
+"""
+stuff = [robot_2019.color_obj.color_obj((random.randint(20, 80), random.randint(20, 80)), n, True, False, False) for n in [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3]]
 JJ = robot_2019.robot((5, 5), stuff, 0)
 """
 
@@ -77,10 +83,3 @@ def reset_field():
         o.spotted = True
         o.retrieved = False
         o.sort = False
-
-if __name__=="__main__":
-    #creates objects and robot (random)
-    stuff = [robot_2019.color_obj.color_obj((random.randint(20, 80), random.randint(20, 80)), n, True, False, False) for n in [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3]]
-    JJ = robot_2019.Robot((5, 5), stuff, 0)
-    loops_gui()
-    show_field()

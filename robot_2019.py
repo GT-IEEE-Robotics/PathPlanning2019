@@ -1,11 +1,8 @@
 import color_obj
-import numpy
 import math
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from matplotlib.path import Path
+
 #defines the state of the robot
-class Robot:
+class robot:
     
     #data describing the current state of the robot
     def __init__(self, my_coords, objects, my_quad):
@@ -16,6 +13,10 @@ class Robot:
     #returns the angle with respect to the center
     def angle(self):
         return math.atan2(self.coords[1]-50, self.coords[0]-50)
+
+    #returns distance from center
+    def radius(self):
+        return math.hypot(self.coords[0]-50, self.coords[1]-50)
 
     #changes the color quadrant to the next one
     def next_quad(self):
@@ -48,11 +49,22 @@ class Robot:
             return sorted(objects, key=lambda x: x.dist(self.coords))
         elif attribute == 'angle':
             return sorted(objects, key=lambda x: x.angle_WRT_robot(self.coords))
+        elif attribute == 'spotted':
+            attr = []
+            for o in objects:
+                if o.spotted == True: attr.append(o)
+            return attr
 
     #decides which object to go to next
     def next_obj(self):
         corners = [(5, 5), (95, 5), (95, 95), (5, 95)]
         if len(self.objs_held())==3: return corners[self.quadrant]
+        elif len(self.attr_sort('spotted')) == 0:
+            next_angle = self.angle() + math.pi/8
+            if self.radius() < 15: rad = self.radius() + 5
+            elif self.radius() > 50: rad = self.radius() - 30
+            else: rad = self.radius()
+            return (rad*math.cos(next_angle)+50, rad*math.sin(next_angle)+50)
         elif self.attr_sort('distance')[0].dist(self.coords)<10: return self.attr_sort('distance')[0]
         else: return self.attr_sort('angle')[0]
 
@@ -75,8 +87,18 @@ class Robot:
         goals.append((5, 5))
         return goals
 
+    #the idea here is that the robot outputs the immediate next location
+    def next_step(self):
+        target = next_obj()
+
 #testing the robot class
 """
+import matplotlib.pyplot as plt
+from matplotlib.path import Path
+import matplotlib.patches as patches
+import numpy
+import math
+
 stuff = [color_obj.color_obj((8, 10), 0, True, False, False)]
 stuff.append(color_obj.color_obj((18, 10), 0, True, False, False))
 stuff.append(color_obj.color_obj((16, 37), 0, True, True, False))
@@ -89,7 +111,7 @@ stuff.append(color_obj.color_obj((46, 37), 2, True, False, False))
 stuff.append(color_obj.color_obj((19, 91), 3, True, False, False))
 stuff.append(color_obj.color_obj((76, 37), 3, True, False, False))
 stuff.append(color_obj.color_obj((6, 37), 3, True, False, False))
-JJ = Robot((3, 3), stuff, 0)
+JJ = robot((3, 3), stuff, 0)
 
 plt.plot([JJ.coords[0]], [JJ.coords[1]], 'k+')
 point_colors = ['bo', 'go', 'ro', 'yo']
