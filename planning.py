@@ -1,124 +1,98 @@
 """
-What we know:
-    - We're given obstacles and locations
-    - List of possible goals (High level)
-    - We're rotating counterclockwise
-
-What to do:
-    - Provide Greedy Algorithm that determines the priority of goals
-    - Return location of goal along with goal
-    - Pass that to RTO (Space Planning)
-
-Design:
-   - Goal Class: Represents a goal, point value, and location
-   - State Class: Define state. Next goal to achieve along with location of goal
-       - Do we track the current location of the robot?
-   - TSP problem: Initialize Graph with original state. Negate edge weights (points) and use TSp to solve
-       - This is quite slow however, and we will want something that is more adaptable.
-   - GreedySearch: Order all goals in a priority queue and pop the one with the least amount of points or the one that's closest
-   - DecisionTree: Create some hypothesis. But what attributes to select?
-
-TODO:
-   - Account for counterclockwise logic (Not sure if RRT handles this or not)
-   - Define goals. we can break complicated goals into simple pieces to make searching state space easier
+Decision making part of path planning implemented with priority queue
 """
-
-
-"""
-TODO:
-what we know for a fact:
-8 cubes , 4 spheres
-for cubes: 2 of each color
-for spheres: 1 of each
-
-NO OTHER ROBOTS ON THE SAME FIELD
-
--localize
--assign values to blocks based on proximity and "how long to organize"
-push through PriorityQueue
-- provide 4 blocks to go to in Order
-- not enough to have a priority queue, have an fsm design for edge cases
-"""
-
 import queue
+import sys
+import re
+from frenet import frenet
 
-""" Goal class containing location of goal and reward for completion
+Round = 1
+numOfObjects = 12
 
-Comparison operators are implemented to allow
-Goal objects to be placed in a PQ
 """
-
+Goal class containing location of goal and reward for completion
+Comparison operators are implemented to allow
+"""
 class Goal:
 
-    def __init__(self, color, location=(), order):
+    inGoal = False
+
+    def __init__(self, color, location=(), priority = 1):
         self.color = color
         self.location = location
-        self.order = order # Number representing the priority of goals
+        self.priority = priority # Number representing the priority of goals
 
     def __gt__(self, other):
         if not isInstance(other, Goal):
             raise ValueError("Attempted to compare incorrect types")
-
-        return self.order > other.order
+        return self.priority > other.priority
 
     def __lt__(self, other):
         if not isInstance(other, Goal):
             raise ValueError("Attempted to compare incorrect types")
+        return self.priority < other.priority
 
-        return self.order < other.order
+    # priority = how close to the next section * distance to the next obj
+    def generateRound1Priority(self, state = None):
+        if self.color  == state.nextSections[0]:
+            self.priority = 4 * state.distToObj(self.location)
+        elif self.color  == state.nextSections[1]:
+            self.priority = 3 * state.distToObj(self.location)
+        elif self.color  == state.nextSections[2]:
+            self.priority = 2 * state.distToObj(self.location)
+        else:
+            self.priority = 1 * state.distToObj(self.location)
 
-    """
-    Returns the amount of time it would take to complete a goal based on a list
-    of average times that is precalculated.
-    The higher the timer the closer the section (ie. higher priority/less time)
-    """
-    def calc_Time(self, currState):
-        timer = 3;
-        for location in currState.locations:
-            if self.color == location:
-                self.value = timer
-            timer--
+    def generateRound2Priority(self, state = None):
+        if self.color  == state.nextSections[0]:
+            self.priority = 4 * state.distToObj(self.location)
+        elif self.color  == state.nextSections[1]:
+            self.priority = 3 * state.distToObj(self.location)
+        elif self.color  == state.nextSections[2]:
+            self.priority = 2 * state.distToObj(self.location)
+        else:
+            self.priority = 1 * state.distToObj(self.location)
 
+    def updateLoc(self):
+        if (self.location == section):
+            inGoal = True
 
-    @property
-    def points(self):
-        return self.points
-
+"""
+The state of the map with current color, loc coordinates, list of goal priorities
+list of objects we can go for and immediate next goal
+"""
 class State:
 
-    sorted = False
     isHome = True # Robot always starts at home
-
-    def __init__(self, currSection = "red", listofSections ={"yellow", "blue", "green", "red"},
-                    listOfObj, ):
+    def __init__(self, location = (0,0), currSection = "red", listofSections = {"yellow", "blue", "green", "red"},
+                    listOfObj = [], goal = (0,0)):
         self.currState = currSection
+        self.location = location
         self.nextSections = listofSections
         self.objsInView = listOfObj
-        self.next_goal = None
-
-    @property
-    def next_goal(self, goal):
         self.next_goal = goal
 
-    @property
-    def goal(self):
-        return self.next_goal
-
-    @property
-    def objects(self):
-        return self.objsInView
-
-    @property
-    def getSections(self):
-        return self.nextSections
-
-    @property
-    def initial_state(self):
-        return self.currState
+    # @property
+    # def next_goal(self, goal):
+    #     self.next_goal = goal
+    #
+    # @property
+    # def goal(self):
+    #     return self.next_goal
+    #
+    # @property
+    # def objects(self):
+    #     return self.objsInView
+    #
+    # @property
+    # def getSections(self):
+    #     return self.nextSections
+    #
+    # @property
+    # def setlocation(self, loc):
+    #     self.location = loc
 
     """
-    Check the sensors to see what section you are currently in and update the list
-    of locations to go through.
     Helps to organize goals based on what comes up next
     """
     def checkSensors(self):
@@ -131,104 +105,95 @@ class State:
         elif self.currState is "green":
             self.nextSections = {"red", "yellow", "blue", "green"}
 
-    # priority = how close to the next section * distance to the next obj
-    def generatePriority(self):
-        for obj in self.objsInView:
-            if obj.color  == self.nextSections[0]:
-                obj.priority = 4 * distToObj(obj)
-            elif obj.color  == self.nextSections[1]:
-                obj.priority = 3 * distToObj(obj)
-            elif obj.color  == self.nextSections[2]:
-                obj.priority = 2 * distToObj(obj)
-            else:
-                obj.priority = 1 * distToObj(obj)
-
     def distToObj(self, block):
-        return sqrt((block.xPos-self.xPos)**2 + (block.yPos-self.yPos)**2)
+        return sqrt((block[0]-currState.location[0])**2 + (block[1]-currState.location[1])**2)
 
 
-""" Method to populate a priority queue of goals
-
-Outputs priority queue with all desired goal states
-
-TODO: Right now the *args treats inputs as Goals. Modify for coordinate tuples
-
-def populate_goals(*args):
-    priority = PriorityQueue()
-    for goal in args:
-        if not isInstance(goal, tuple):
-            print("Next goal not Goal object. Skipping...")
-        else:
-            priority.put(goal) # TODO
-    return priority
-
-
-This is a TSP algorithm found online
-
-def optimized_travelling_salesman(points, start=None):
-
-    As solving the problem in the brute force way is too slow,
-    this function implements a simple heuristic: always
-    go to the nearest city.
-
-    Even if this algoritmh is extremely simple, it works pretty well
-    giving a solution only about 25% longer than the optimal one (cit. Wikipedia),
-    and runs very fast in O(N^2) time complexity.
-
-    >>> optimized_travelling_salesman([[i,j] for i in range(5) for j in range(5)])
-    [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [1, 4], [1, 3], [1, 2], [1, 1], [1, 0], [2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [3, 4], [3, 3], [3, 2], [3, 1], [3, 0], [4, 0], [4, 1], [4, 2], [4, 3], [4, 4]]
-    >>> optimized_travelling_salesman([[0,0],[10,0],[6,0]])
-    [[0, 0], [6, 0], [10, 0]]
-
-    if start is None:
-        start = points[0]
-    must_visit = points
-    path = [start]
-    must_visit.remove(start)
-    while must_visit:
-        nearest = min(must_visit, key=lambda x: distance(path[-1], x))
-        path.append(nearest)
-        must_visit.remove(nearest)
-    return path
-
-Things to consider
-
-Right now the approach is to target the goal
-that is worth the most points. Later on we
-might want to integrate some average with the
-amount of time taken to achieve a task
-for the purposes of this task, we can
-approximate that value as the euclidean distance
-between the goal location and the current location
-of the bot
-
-Right now, we consider the most basic scenario, which
-is leaving home and entering Z1, collecting all objects,
-sorting each one, and raising the flag at the end. Every
-goals' order attribute represents this
-
-Input: Tuple of coordinates
 """
+Priority Queue class
+- has update method and takes in tuples of data and priority
+"""
+class PriorityQueue(object):
+    def __init__(self):
+        self.queue = []
+
+    def __str__(self):
+        return ' '.join([str(i) for i in self.queue])
+
+    def isEmpty(self):
+        return len(self.queue) == []
+
+    # for inserting an element in the queue
+    def enqueue(self, data):
+        self.queue.append(data)
+
+    # picks a goal to go for and removes it from queue
+    def dequeue(self):
+        if (not isEmpty()):
+            max = 0
+            for i in range(len(self.queue)):
+                if self.queue[i].priority > self.queue[max].priority:
+                    max = i
+            item = self.queue[max]
+            del self.queue[max]
+            return item
+        else:
+            print("No goals")
+            return 0
+
+    # updates an existing goals priority
+    def update(self, data):
+        for x in self.queue:
+            if (x.location == data.location and x.location == data.location):
+                x.priority = data.priority
+                return True
+        return False
+
+queue = PriorityQueue()
+currState = State()
+
+
 def main(*args):
     #print("Hello World")
     grid = ()
-    #
-    for goal in args:
-        goal.order = self.order * calc_Time(goal, currState)
-    goal_order = populate_goals(args) # TODO! See method
-    distance = []
-    for goal in goal_order:
-        distance[1] = goal.location - State.curr_loc
-    if State.isHome and not State.sorted:
-        # Go to Zone 1
-        # State.isHome = False
+    # args will have the following information
+    StateCoord = sys.argv[1]
+    StateColor = sys.argv[2]
+    objectsToGoFor = re.findall(r"[\w']+",sys.argv[3])
+    objectsToAvoid = sys.argv[4]
+    currState = State(location = StateCoord, currSection = StateColor, listOfObj = objectsToGoFor)
+    currState.checkSensors()
+    # currently objects only have coordinates, no color
+    for goal in objectsToGoFor:
+        obj = Goal(color = goal[0], location = goal[1])
+        if (Round == 1):
+            obj.generateRound1Priority()
+        else:
+            obj.generateRound2Priority()
+        if (not queue.update(obj)):
+            queue.enqueue(obj)
+    newGoal = queue.dequeue()
+    if (newGoal == 0):
+        # tell to explore
+        # flip coordinates around centerpiece and set path planning on it
+        newX = 0;
+        newY = 0;
+        if (4.5-currState.location[0] > 0):
+            newX = 4.5 + abs(4.5-currState.location[0])
+        else:
+            newX = 4.5 - abs(4.5-currState.location[0])
+        if (4.5-currState.location[1] > 0):
+            newY = 4.5 + abs(4.5-currState.location[1])
+        else:
+            newY = 4.5 - abs(4.5-currState.location[1])
+        aim = ((newX, newY), objectsToAvoid)
 
-    while not State.sorted:
-        # Go counterclockwise through each zone and sort debris
-
-    # Go to Z1, and go home from there.
-    # Raise flag to indicate success
+    else:
+        # call frenet on this tuple
+        aim = (newGoal.location, objectsToAvoid)
 
 
-if __name__="__main__":
+
+
+if __name__=="__main__":
     main()
