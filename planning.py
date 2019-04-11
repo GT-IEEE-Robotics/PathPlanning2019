@@ -152,15 +152,17 @@ class PriorityQueue(object):
 queue = PriorityQueue()
 currState = State()
 
-
-def main(*args):
+# stateCoord - tuple of x,y location
+# stateColor - string of color
+#
+def main(start, color, obj, avoid):
     #print("Hello World")
     grid = ()
     # args will have the following information
-    StateCoord = sys.argv[1]
-    StateColor = sys.argv[2]
-    objectsToGoFor = re.findall(r"[\w']+",sys.argv[3])
-    objectsToAvoid = sys.argv[4]
+    StateCoord = start
+    StateColor = color
+    objectsToGoFor = obj
+    objectsToAvoid = avoid
     currState = State(location = StateCoord, currSection = StateColor, listOfObj = objectsToGoFor)
     currState.checkSensors()
     # currently objects only have coordinates, no color
@@ -186,14 +188,12 @@ def main(*args):
             newY = 4.5 + abs(4.5-currState.location[1])
         else:
             newY = 4.5 - abs(4.5-currState.location[1])
-        aim = ((newX, newY), objectsToAvoid)
-
+        #aim = ((newX, newY), objectsToAvoid)
+        return frenet(((newX, newY), objectsToAvoid))
     else:
         # call frenet on this tuple
-        aim = (newGoal.location, objectsToAvoid)
-
-
-
+        #aim = (newGoal.location, objectsToAvoid)
+        return frenet(newGoal.location, objectsToAvoid)
 
 if __name__=="__main__":
     main()

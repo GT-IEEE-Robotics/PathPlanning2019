@@ -363,8 +363,10 @@ def frenet(goal, objectsToAvoid):
     if show_animation:  # pragma: no cover
         plt.grid(True)
         plt.show()
+    return waypoints
 
 
 if __name__ == '__main__':
-    frenet([(10,0),(50, 7)], [[31,11], [43,9], [24,-5], [39,5], [46,3]])
+    frenet([(10,0),(50,7)], [[31,11], [43,9], [24,-5], [39,5], [46,3]])
     # [(0,0), (10,-3), (37,10), (43, 4), (50, 7)], [[31,11], [43,9], [24,-5], [39,5], [46,3]]
+    frenet(goals, avoid)
