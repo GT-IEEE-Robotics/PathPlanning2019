@@ -17,28 +17,28 @@ class Grid:
     def __init__(self, origin):
         if origin == "yellow":
             self.origin = "yellow"
-            self.blue = ((8.0,0),"blue")
-            self.green = ((8.0,8.0),"green")
-            self.red = ((0,8.0),"red")
+            self.blue = ((7.5,0),"blue")
+            self.green = ((7.5,7.5),"green")
+            self.red = ((0,7.5),"red")
             self.yellow = ((0.5,0.5),"yellow")
         elif origin == "blue":
             self.origin = "blue"
             self.blue = ((0.5,0.5),"blue")
-            self.green = ((8.0,0),"green")
-            self.red = ((8.0,8.0),"red")
-            self.yellow = ((8.0,0),"yellow")
+            self.green = ((7.5,0),"green")
+            self.red = ((7.5,7.5),"red")
+            self.yellow = ((7.5,0),"yellow")
         elif origin == "green":
             self.origin = "green"
-            self.blue = ((0,8.0),"blue")
+            self.blue = ((0,7.5),"blue")
             self.green = ((0.5,0.5),"green")
-            self.red = ((8.0,0),"red")
-            self.yellow = ((8.0,8.0),"yellow")
+            self.red = ((7.5,0),"red")
+            self.yellow = ((7.5,7.5),"yellow")
         elif origin == "red":
             self.origin = "red"
-            self.blue = ((8.0,8.0),"blue")
-            self.green = ((0,8.0),"green")
+            self.blue = ((7.5,7.5),"blue")
+            self.green = ((0,7.5),"green")
             self.red = ((0.5,0.5),"red")
-            self.yellow = ((8.0,0),"yellow")
+            self.yellow = ((7.5,0),"yellow")
 
     def dist(self, obj):
         if obj.color == self.blue[1]:
