@@ -17,28 +17,28 @@ class Grid:
     def __init__(self, origin):
         if origin == "yellow":
             self.origin = "yellow"
-            self.blue = ((7.5,0),"blue")
-            self.green = ((7.5,7.5),"green")
-            self.red = ((0,7.5),"red")
+            self.blue = ((8.0,0),"blue")
+            self.green = ((8.0,8.0),"green")
+            self.red = ((0,8.0),"red")
             self.yellow = ((0.5,0.5),"yellow")
         elif origin == "blue":
             self.origin = "blue"
             self.blue = ((0.5,0.5),"blue")
-            self.green = ((7.5,0),"green")
-            self.red = ((7.5,7.5),"red")
-            self.yellow = ((7.5,0),"yellow")
+            self.green = ((8.0,0),"green")
+            self.red = ((8.0,8.0),"red")
+            self.yellow = ((8.0,0),"yellow")
         elif origin == "green":
             self.origin = "green"
-            self.blue = ((0,7.5),"blue")
+            self.blue = ((0,8.0),"blue")
             self.green = ((0.5,0.5),"green")
-            self.red = ((7.5,0),"red")
-            self.yellow = ((7.5,7.5),"yellow")
+            self.red = ((8.0,0),"red")
+            self.yellow = ((8.0,8.0),"yellow")
         elif origin == "red":
             self.origin = "red"
-            self.blue = ((7.5,7.5),"blue")
-            self.green = ((0,7.5),"green")
+            self.blue = ((8.0,8.0),"blue")
+            self.green = ((0,8.0),"green")
             self.red = ((0.5,0.5),"red")
-            self.yellow = ((7.5,0),"yellow")
+            self.yellow = ((8.0,0),"yellow")
 
     def dist(self, obj):
         if obj.color == self.blue[1]:
@@ -59,9 +59,10 @@ class Goal:
 
     inGoal = False
 
-    def __init__(self, color, location=(), priority = 1):
+    def __init__(self, color, location=(), pickup=False, priority = 1):
         self.color = color
         self.location = location
+        self.pickup = pickup
         self.priority = priority # Number representing the priority of goals
 
     def __gt__(self, other):
@@ -223,7 +224,7 @@ def main(origin, start, color, obj, avoid, held):
         for x in currentlyHeld:
             items.append((x,field.dist(x)))
         sort = min(items, key = lambda t: t[1])
-        sortGoal = Goal(sort[0], sort[1])
+        sortGoal = Goal(sort[0], sort[1], pickup=False)
         if len(items) == 4:
             sortGoal.priority = math.inf
             return frenet(sortGoal.location, objectsToAvoid), sortGoal
@@ -233,7 +234,7 @@ def main(origin, start, color, obj, avoid, held):
 
     # currently objects only have coordinates, no color
     for goal in objectsToGoFor:
-        obj = Goal(color = goal[0], location = goal[1])
+        obj = Goal(color = goal[0], location = goal[1], pickup=True)
         if (Round == 1):
             obj.generateRound1Priority()
         else:
